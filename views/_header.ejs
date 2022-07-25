@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr" class="h-100">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<title>YC40</title>
+		<link rel="stylesheet" href="/css/bootstrap.css">
+		
+	</head>
+	
+	<body class="d-flex flex-column h-100 bg-primary">
+		<script src="/js/bootstrap.bundle.min.js"></script>
+		<header class="mb-auto">
+			<nav class="navbar navbar-expand-lg navbar-light bg-light">
+				<div class="container d-flex flex-wrap">
+					<a href="/" class="h1 d-flex mb-2 mb-md-0 text-dark text-decoration-none">Rhum 2022</a>
+					<ul class="nav justify-content-center">
+						<li class="nav-item">
+							<a class="nav-link px-2 link-dark" href="/actu">Actualités</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link px-2 link-dark" href="/bateau">Bateau</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link px-2 link-dark" href="/skipper">Skipper</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link px-2 link-dark" href="https://www.class40.com/fr/index/" target=”_blank”>Class 40</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link px-2 link-dark" href="https://www.routedurhum.com/fr" target=”_blank”>Courses</a>
+						</li>
+					</ul>
+					<ul class="nav">
+						<% if(!req.session.isLoggedIn){ %>
+							<li class="nav-item">
+								<a class="nav-link px-2 link-dark" href="/signup">Créer un compte</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link px-2 link-dark" href="/login">Connexion</a>
+							</li>					
+						<% } %>
+						<% if(req.session.isLoggedIn){ %>
+							<li class="nav-item">
+								<a class="nav-link px-2 link-dark" href="/logout">Déconnexion</a>
+							</li>
+							<li class="nav-item">
+								<a class="nav-link px-2 link-dark"><%= req.session.nickname %></a>
+								<!--<img src="image/pp" class="logout" alt="profile picture">-->
+							</li>
+						<% } %>
+					</ul>
+				</div>
+			</nav>
+		</header>
+		<div class="container bg-primary p-3"></div>

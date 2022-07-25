@@ -1,0 +1,66 @@
+<%- include("_header") -%>
+
+<main class="bg-primary">
+	<div class="container bg-primary p-3"></div>
+	<div class="container bg-light p-3 rounded">
+		<p class="h1">
+			<%=actu[0].title%>
+		</p>
+		<div class="container bg-light p-3"></div>
+		<%
+			const paragraphes = actu[0].content.split('\r');
+			for (const paragraphe of paragraphes) { 
+			%>
+			<p>
+				<%=paragraphe%>
+				
+			</p>
+		<% } %>
+		<div class="container bg-light p-3"></div>
+		<p>
+			<%=actu[0].date%>
+		</p>
+	</div>
+	
+	<div class="container bg-primary p-3"></div>
+	
+	<div class="container bg-light p-3 rounded">
+		<form action="/newanswer/<%= actu[0].actuId %>" method="post">
+			<div class="form-horizontal">
+				<div class="form-group row">
+					<label class="row-form-label row-sm-2" for="comment">Commentaires</label>
+					<div class="row-sm-8">
+						<input class="form-control" name="comment" value="" />
+						<input type="submit" value="Poster un commentaire" class="btn btn-default btn-success" />
+					</div>
+				</div>
+			</div>
+		</form>
+		<div class="container bg-light p-3"></div>
+		<div class="d-flex flex-column">
+			<% for (const com of actu[1]) { %>
+			<div class="d-flex flex-column bg-white p-2 rounded">
+				<div class="d-flex flex-column p-2">
+					<div class="d-flex flex-row p-2 align-items-center">
+						<div class="h4 p-1"><%= com.author %></div>
+						<div class="p-1">écrit le <%= com.date %></div>
+					</div>
+					<div class="d-flex flex-row p-2">
+						<div class="p-2"><%= com.content %></div>
+					</div>
+				</div>
+				<div class="btn-group text-center ms-auto p-2 ">
+					<% if(req.session.admin || req.session.key==com.authorId){ %>
+						<!--<a type="button" class="btn btn-sm btn-outline-secondary" href="/edita/<%= com.answerId %>">Editer</a>-->
+						<a type="button" class="btn btn-sm btn-outline-danger" href="/deletea/<%= com.actuId %>/<%= com.answerId %>">Supprimer</a>
+					<% } %>
+					<!--<a type="button" class="btn btn-sm btn-success" href="/Upvote/<%= com.answerId %>"><%= com.votesnb %> Upvote</a>-->
+					<!--<a type="button" class="btn btn-sm btn-secondary" href="/NewAnswer/<%= com.answerId %>">Répondre</a>-->
+				</div>
+			</div>
+			<div class="container bg-light p-3"></div>
+			<% } %>
+		</div>
+	</div>
+</main>
+<%- include("_footer") -%>

@@ -1,0 +1,150 @@
+<%- include("_header") -%>
+
+<main class="bg-primary">
+
+	<section class="py-5 text-center container">
+		<div class="row py-lg-5">
+			<div class="col-lg-6 col-md-8 mx-auto">
+				<h1 class="fw-light">Album example</h1>
+				<p class="lead text-muted">Something short and leading about the collection below—its contents, the creator, etc. Make it short and sweet, but not too short so folks don’t simply skip over it entirely.</p>
+				<p>
+					<% if(req.session.admin==1){ %>
+						<a href="/newactu" class="btn btn-secondary my-2">Nouvel article</a>
+					<% } %>
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<div class="album py-5 bg-primary">
+		<div class="container">
+			
+			<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+				<% for (const actu of model) { %>
+					<div class="col">
+						<div class="card shadow-sm">
+							<div class="">
+								<img src="/image/<%= actu.image %>" class="card-img-top cover" height="225" focusable="false">
+							</div>
+							
+							<div class="card-body">
+								<h6 class="card-text"><%= actu.title%></h6>
+								<div class="d-flex justify-content-between align-items-center">
+									<div class="btn-group text-center">
+										<a type="button" class="btn btn-sm btn-outline-secondary" href="/article/<%= actu.actuId %>">Lire plus</a>
+										<% if(req.session.admin==1){ %>
+											<a type="button" class="btn btn-sm btn-outline-secondary" href="/edit/<%= actu.actuId %>">Editer</a>
+											<a type="button" class="btn btn-sm btn-outline-danger" href="/delete/<%= actu.actuId %>">Supprimer</a>
+											<!--<a type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmdel">">Suppression</a>-->
+										<% } %>
+									</div>
+									<small class="text-muted"><%= actu.ddate%></small>
+								</div>
+							</div>
+						</div>
+					</div>
+				<% } %>
+			</div>
+		</div>
+	</div>
+
+</main>
+
+<!--
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<ul class="navbar-nav mr-auto">
+		<li class="nav-item">
+			<a class="nav-link" href="/faq/http">http</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="/faq/javascript">javascript</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="/faq/python">python</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="/faq/nginx">nginx</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="/faq/linux">linux</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link" href="/faq/node">node</a>
+		</li>
+	</ul>
+</nav>
+
+
+
+<form action="/faq/searchkeyword" method="post">
+	<div class="form-horizontal">
+
+		<div class="form-group row">
+		<label class="col-form-label col-sm-2" for="search">Search</label>
+		<div class="col-sm-8">
+		<input autofocus class="form-control" name="search" value="<%= model.search%>" />
+		</div>
+	</div>
+
+		<div class="form-group row">
+			<label class="col-form-label col-sm-2"></label>
+			<div class="col-sm-10">
+				<input type="submit" value="Search" class="btn btn-default btn-success" />
+			</div>
+		</div>
+	</div>
+</form>
+-->
+
+
+<!--
+<h1>Actualités</h1>
+
+<div class="table-responsive-sm">
+	<table class="table table-hover">
+		<thead>
+			<tr>
+				<th>Question</th>
+				<th>Reponse</th>
+		<th>Domain</th>
+		<th>Author</th>
+		<th>Upvote</th>
+			</tr>
+		</thead>
+		<tbody>
+			<% for (const faq of model) { %>
+				<tr>
+					<td><%= faq.question %></td>
+					<td><%= faq.reponse %></td>
+			<td><%= faq.domain %></td>
+			<td><%= faq.author %></td>
+			<td><%= faq.votesnb %></td>
+					<td class="d-print-none">
+			<a class="btn btn-sm btn-success" href="/Upvote/<%= faq.faqId %>">Upvote</a>
+			<a class="btn btn-sm btn-danger" href="/Downvote/<%= faq.faqId %>">Downvote</a>
+			<a class="btn btn-sm btn-secondary" href="/NewAnswer/<%= faq.faqId %>">Add answer</a>
+			</td>
+				</tr>
+			<% } %>
+		</tbody>
+	</table>
+</div>
+<% if(req.session.admin){ %>
+<h1>Want to share your knowledge ?</h1>
+
+<form action="/faq" method="post">
+	<div class="form-horizontal">
+
+		<%- include("_editor") -%>
+
+		<div class="form-group row">
+			<label class="col-form-label col-sm-2"></label>
+			<div class="col-sm-10">
+				<input type="submit" value="Save" class="btn btn-default btn-success" />
+			</div>
+		</div>
+	</div>
+</form>
+<% } %>
+-->
+<%- include("_footer") -%>

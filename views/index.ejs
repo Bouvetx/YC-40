@@ -1,0 +1,39 @@
+<%- include("_header") -%>
+
+<% if(req.session.isLoggedIn){ %>
+		<span style="float: right;"><%= req.session.nickname %></span>
+<% } %>
+
+<h1>Top of Questions and Answers</h1>
+
+<div class="table-responsive-sm">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th>Reponse</th>
+		<th>Domain</th>
+		<th>Author</th>
+		<th>Upvote</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for (const faq of model) { %>
+        <tr>
+          <td><%= faq.question %></td>
+          <td><%= faq.reponse %></td>
+		  <td><%= faq.domain %></td>
+		  <td><%= faq.author %></td>
+		  <td><%= faq.votesnb %></td>
+          <td class="d-print-none">
+			<a class="btn btn-sm btn-success" href="/Upvote/<%= faq.faqId %>">Upvote</a>
+            <a class="btn btn-sm btn-danger" href="/Downvote/<%= faq.faqId %>">Downvote</a>
+			<a class="btn btn-sm btn-secondary" href="/NewAnswer/<%= faq.faqId %>">Add answer</a>
+		  </td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<%- include("_footer") -%>
