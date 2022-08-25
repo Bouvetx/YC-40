@@ -1,5 +1,5 @@
 const express = require("express");
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const path = require("path");
 const sqlite3 = require("sqlite3").verbose();
@@ -8,7 +8,7 @@ const fileUpload = require('express-fileupload');
 const app = express();
 const crypto = require('crypto');
 
-app.use(cookieParser());
+//app.use(cookieParser());
 app.use(fileUpload());
 /* const https = require('https');
 const fs = require('fs');
@@ -28,7 +28,7 @@ app.use(session({
     saveUninitialized: false,
 	nickname: "",
     cookie: {
-        expires: 600000
+        expires: 86400000
     }
 }));
 
@@ -141,9 +141,11 @@ app.use(express.urlencoded({ extended: false })); // <--- middleware configurati
 
 
 // Starting the server
-app.listen(3000, () => {
-  console.log("Server started (http://localhost:3000/) !");
-});
+let port = process.env.PORT;
+if (port == null || port == "") {
+  port = 3000;
+}
+app.listen(port);
 
 
 
@@ -294,13 +296,17 @@ app.get("/article/:id", (req, res) => {
 		if (err) {
 			return console.error(err.message);
 		}
-		const sql2 = "SELECT * FROM answer where actuId=? ORDER BY answerId desc"
-		db.all(sql2, actu1, (err, rows2) => {
-			if (err) {
-				return console.error(err.message);
-			}
-			res.render("article",{actu:[rows1,rows2] ,req:req})
-		});
+		if(rows1){
+			const sql2 = "SELECT * FROM answer where actuId=? ORDER BY answerId desc"
+			db.all(sql2, actu1, (err, rows2) => {
+				if (err) {
+					return console.error(err.message);
+				}
+				res.render("article",{actu:[rows1,rows2] ,req:req})
+			});
+		}else{
+			res.redirect('/actu');
+		}
 	});
 });
 
@@ -420,5 +426,5 @@ app.get("/deletea/:articleId/:andwerId",sessionChecker, (req, res) => {
 
 app.use(function (req, res, next) {
 	//improve this
-	res.status(404).redirect('/');
+	res.status(404).render("404",{req:req});;
 });
