@@ -2,7 +2,7 @@ const express = require("express");
 //const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const path = require("path");
-const sqlite3 = require("sqlite3").verbose();
+const { Pool } = require("pg");
 const fileUpload = require('express-fileupload');
 // Creating the Express server
 const app = express();
@@ -21,9 +21,14 @@ const options = {
 https.createServer(options, function (req, res) {
 }).listen(3001); */
 
+const connectionString = 'postgresql://yoda:h5cVMx48QWZkWYf32s6_ow@free-tier13.aws-eu-central-1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&options=--cluster%3Dyc-40-bdd-3058'
+const pool = new Pool({
+  connectionString,
+});
+
 app.use(session({
     key: 'user_sid',
-    secret: 'AbC',
+    secret: 'cac40',
     resave: false,
     saveUninitialized: false,
 	nickname: "",
@@ -39,16 +44,6 @@ const sessionChecker = (req, res, next) => {
         next();
     }    
 };
-
-
-
-const db_name = path.join(__dirname, "data", "YC40.db");
-const db = new sqlite3.Database(db_name, err => {
-  if (err) {
-    return console.error(err.message);
-  }
-  console.log("Successful connection to the database 'YC40.db'");
-});
 
 /*
 const sql_debug1 = `DROP table faq;`;
@@ -82,55 +77,6 @@ db.all(sql_debug3, [], (err, rows) => {
 });
 */
 
-const sql_create_db_user = `CREATE TABLE IF NOT EXISTS user (
-  userId INTEGER PRIMARY KEY AUTOINCREMENT,
-  email TEXT NOT NULL,
-  nickname TEXT NOT NULL,
-  password TEXT NOT NULL,
-  admin BIT NOT NULL
-);`;
-
-db.run(sql_create_db_user, err => {
-  if (err) {
-    return console.error(err.message);
-  }
-  console.log("Successful creation of the 'user' table");
-});
-
-const sql_create_db_actu = `CREATE TABLE IF NOT EXISTS actu (
-  actuId INTEGER PRIMARY KEY AUTOINCREMENT,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  author TEXT NOT NULL,
-  authorid TEXT NOT NULL,
-  image TEXT default "default.jpg",
-  date TEXT default current_timestamp
-);`;
-
-db.run(sql_create_db_actu, err => {
-  if (err) {
-    return console.error(err.message);
-  }
-  console.log("Successful creation of the 'actu' table");
-});
-
-const sql_create_db_answer = `CREATE TABLE IF NOT EXISTS answer (
-  answerId INTEGER PRIMARY KEY AUTOINCREMENT,
-  actuId INTEGER NOT NULL,
-  content TEXT NOT NULL,
-  author TEXT NOT NULL,
-  authorId TEXT NOT NULL,
-  votes TEXT DEFAULT "",
-  votesnb INTEGER DEFAULT 0,
-  date TEXT default current_timestamp
-);`;
-
-db.run(sql_create_db_answer, err => {
-  if (err) {
-    return console.error(err.message);
-  }
-  console.log("Successful creation of the 'answer' table");
-});
 
 // Server configuration
 app.set("view engine", "ejs");
@@ -165,7 +111,7 @@ app.listen(port);
 
 app.get("/actu", (req, res) => {
 	const sql = "SELECT date(date) as ddate,title,actuId,image FROM actu order by actuId desc"
-		  db.all(sql, [], (err, rows) => {
+		  pool.query(sql, [], (err, rows) => {
 			if (err) {
 			  return console.error(err.message);
 			}
@@ -202,7 +148,7 @@ app.post("/login", (req, res) => {
 	const sql = "SELECT * from user where (nickname=? or email=?) and password=?";
 	var pass=crypto.createHash('md5').update(req.body.password).digest("hex");
 	const user = [req.body.nickname,req.body.nickname,pass];
-	db.all(sql, user,(err ,rows )=> {
+	pool.query(sql, user,(err ,rows )=> {
 		if (err) {
 			return console.error(err.message);
 		}
@@ -233,7 +179,7 @@ app.post("/signup", (req, res) => {
   const sql = "INSERT INTO user (email, nickname,password,admin) VALUES (?,?,?,0)";
   var pass=crypto.createHash('md5').update(req.body.password).digest("hex");
   const user = [req.body.email, req.body.nickname,pass];
-  db.run(sql, user, err => {
+  pool.query(sql, user, err => {
     if (err) {
       return console.error(err.message);
     }
@@ -255,7 +201,7 @@ app.post("/newactu",sessionChecker, (req, res) => {
 			if(!req.files) {
 				const sql = "INSERT INTO actu (title, content,author,authorId) VALUES (?,?,?,?)";
 				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key];
-				db.run(sql, user, err => {
+				pool.query(sql, user, err => {
 					if (err) {
 						return console.error(err.message);
 					}
@@ -269,7 +215,7 @@ app.post("/newactu",sessionChecker, (req, res) => {
 				picture.mv('./public/image/' + picture.name);
 				const sql = "INSERT INTO actu (title, content,author,authorId,image) VALUES (?,?,?,?,?)";
 				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key,req.files.picture.name];
-				db.run(sql, user, err => {
+				pool.query(sql, user, err => {
 					if (err) {
 						return console.error(err.message);
 					}
@@ -292,13 +238,13 @@ app.post('/upload-avatar', async (req, res) => {
 app.get("/article/:id", (req, res) => {
 	const sql1 = "SELECT * FROM actu where actuId=?"
 	const actu1 = [req.params.id];
-	db.get(sql1, actu1, (err, rows1) => {
+	pool.query(sql1, actu1, (err, rows1) => {
 		if (err) {
 			return console.error(err.message);
 		}
 		if(rows1){
 			const sql2 = "SELECT * FROM answer where actuId=? ORDER BY answerId desc"
-			db.all(sql2, actu1, (err, rows2) => {
+			pool.query(sql2, actu1, (err, rows2) => {
 				if (err) {
 					return console.error(err.message);
 				}
@@ -314,7 +260,7 @@ app.get("/edit/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
 		const sql1 = "SELECT * FROM actu where actuId=?"
 	const actu1 = [req.params.id];
-	db.all(sql1, actu1, (err, rows) => {
+	pool.query(sql1, actu1, (err, rows) => {
 		if (err) {
 			return console.error(err.message);
 		}
@@ -330,7 +276,7 @@ app.post("/edit/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
 		const sql1 = "UPDATE actu SET title=? , content=? WHERE actuId=?";
 		const actu1 = [req.body.title,req.body.content,req.params.id];
-		db.run(sql1, actu1, (err, rows) => {
+		pool.query(sql1, actu1, (err, rows) => {
 			if (err) {
 			  return console.error(err.message);
 			}
@@ -346,7 +292,7 @@ app.get("/delete/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
 		const sql1 = "DELETE FROM actu WHERE actuId=?";
 		const actu1 = [req.params.id];
-		db.run(sql1, actu1, (err, rows) => {
+		pool.query(sql1, actu1, (err, rows) => {
 			if (err) {
 			  return console.error(err.message);
 			}
@@ -362,7 +308,7 @@ app.post("/newanswer/:id", (req, res) => {
 	if(req.session.isLoggedIn){
 		const sql = "INSERT INTO answer (content,author,authorId,actuId) VALUES (?,?,?,?)";
 		const user = [req.body.comment,req.session.nickname,req.session.key,req.params.id];
-		db.run(sql, user, err => {
+		pool.query(sql, user, err => {
 			if (err) {
 				return console.error(err.message);
 			}
@@ -412,7 +358,7 @@ app.get("/deletea/:articleId/:andwerId",sessionChecker, (req, res) => {
 	if(req.session.isLoggedIn){
 		const sql1 = "DELETE FROM answer WHERE answerId=?";
 		const actu1 = [req.params.andwerId];
-		db.run(sql1, actu1, (err, rows) => {
+		pool.query(sql1, actu1, (err, rows) => {
 			if (err) {
 			  return console.error(err.message);
 			}
