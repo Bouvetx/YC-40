@@ -99,11 +99,14 @@ pool.query(imgreco, [], (err, rows) => {
 		return console.error(err.message);
 	}
 	rows.rows.forEach((row) => {
-		fs.writeFile('./public/image/' + row.imagename, row.image, 'ascii', function(err) {
-			if (err) {
-				return console.error(err.message);
-			}
-		});
+		console.log(row.imagename);
+		if(row.imagename!="default.jpg"){
+			fs.writeFile('./public/image/' + row.imagename, row.image, 'ascii', function(err) {
+				if (err) {
+					return console.error(err.message);
+				}
+			});
+		}
 	});
 });
 
@@ -254,12 +257,22 @@ app.get("/article/:id", (req, res) => {
 		if (err) {
 			return console.error(err.message);
 		}
+		rows1.rows.forEach((row) => {
+			var sep ="-";
+			var temp1 = row.date.split('-');
+			row.date=temp1[2]+sep+temp1[1]+sep+temp1[0]
+		});
 		if(rows1){
 			const sql2 = "SELECT answerid,actuid,content,author,authorid,cast(date AS TEXT) FROM answer where actuid=$1 ORDER BY answerid desc"
 			pool.query(sql2, actu1, (err, rows2) => {
 				if (err) {
 					return console.error(err.message);
 				}
+				rows2.rows.forEach((row) => {
+					var sep ="-";
+					var temp1 = row.date.split('-');
+					row.date=temp1[2]+sep+temp1[1]+sep+temp1[0]
+				});
 				res.render("article",{actu:[rows1.rows[0],rows2.rows] ,req:req})
 			});
 		}else{
