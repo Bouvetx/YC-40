@@ -1,8 +1,8 @@
 const express = require("express");
-//const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const path = require("path");
 const { Pool } = require("pg");
+const fs = require("fs");
 const fileUpload = require('express-fileupload');
 // Creating the Express server
 const app = express();
@@ -93,11 +93,23 @@ if (port == null || port == "") {
 }
 app.listen(port);
 
-
+const imgreco = "SELECT image,imagename FROM actu"
+pool.query(imgreco, [], (err, rows) => {
+	if (err) {
+		return console.error(err.message);
+	}
+	rows.rows.forEach((row) => {
+		fs.writeFile('./public/image/' + row.imagename, row.image, 'ascii', function(err) {
+			if (err) {
+				return console.error(err.message);
+			}
+		});
+	});
+});
 
 /* app.get('/', (req, res) => {
     if (true) {
-		const sql = "SELECT * FROM actu order by actuId desc"
+		const sql = "SELECT * FROM actu order by actuid desc"
 		  db.all(sql, [], (err, rows) => {
 			if (err) {
 			  return console.error(err.message);
@@ -110,17 +122,21 @@ app.listen(port);
 }); */
 
 app.get("/actu", (req, res) => {
-	const sql = "SELECT date(date) as ddate,title,actuId,image FROM actu order by actuId desc"
-		  pool.query(sql, [], (err, rows) => {
-			if (err) {
-			  return console.error(err.message);
-			}
-			res.render("actu", {model:rows ,req:req});
-		  });
+	const sql = "SELECT cast(date AS TEXT),title,actuid,imagename FROM actu order by date desc"
+	pool.query(sql, [], (err, rows) => {
+		if (err) {
+			return console.error(err.message);
+		}
+		rows.rows.forEach((row) => {
+			var sep ="-";
+			var temp1 = row.date.split('-');
+			row.date=temp1[2]+sep+temp1[1]+sep+temp1[0]
+		});
+		res.render("actu", {model:rows.rows ,req:req});
+	});
 });
 
 app.get("/", (req, res) => {
-	//console.log(req.session);
 	res.render("home",{req:req});
 });
 
@@ -145,18 +161,18 @@ app.get("/course", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-	const sql = "SELECT * from user where (nickname=? or email=?) and password=?";
+	const sql = "SELECT * from utilisateur where (nickname=$1 or email=$2) and password=$3";
 	var pass=crypto.createHash('md5').update(req.body.password).digest("hex");
 	const user = [req.body.nickname,req.body.nickname,pass];
 	pool.query(sql, user,(err ,rows )=> {
 		if (err) {
 			return console.error(err.message);
 		}
-		if(rows[0]!=null){
+		if(rows.rows[0]!=null){
 			req.session.isLoggedIn = true;
-			req.session.nickname = rows[0].nickname;
-			req.session.key= rows[0].userId;
-			req.session.admin=rows[0].admin;
+			req.session.nickname = rows.rows[0].nickname;
+			req.session.key= rows.rows[0].userid;
+			req.session.admin=rows.rows[0].admin;
 			res.redirect("/");
 		}
 		else{
@@ -176,7 +192,7 @@ app.get("/logout",sessionChecker, (req, res) => {
 
 app.post("/signup", (req, res) => {
   //verifie si l'user exist
-  const sql = "INSERT INTO user (email, nickname,password,admin) VALUES (?,?,?,0)";
+  const sql = "INSERT INTO utilisateur(userid,email, nickname,password,admin) VALUES(default,$1,$2,$3,0)";
   var pass=crypto.createHash('md5').update(req.body.password).digest("hex");
   const user = [req.body.email, req.body.nickname,pass];
   pool.query(sql, user, err => {
@@ -199,7 +215,7 @@ app.post("/newactu",sessionChecker, (req, res) => {
 	if(req.session.admin){
 		try {
 			if(!req.files) {
-				const sql = "INSERT INTO actu (title, content,author,authorId) VALUES (?,?,?,?)";
+				const sql = "INSERT INTO actu (title, content,author,authorid) VALUES ($1,$2,$3,$4)";
 				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key];
 				pool.query(sql, user, err => {
 					if (err) {
@@ -210,16 +226,16 @@ app.post("/newactu",sessionChecker, (req, res) => {
 			} else {
 				//Use the name of the input field (i.e. "avatar") to retrieve the uploaded file
 				let picture = req.files.picture;
-				
+				console.log(picture.data);
 				//Use the mv() method to place the file in upload directory (i.e. "uploads")
 				picture.mv('./public/image/' + picture.name);
-				const sql = "INSERT INTO actu (title, content,author,authorId,image) VALUES (?,?,?,?,?)";
-				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key,req.files.picture.name];
+				const sql = "INSERT INTO actu (title, content,author,authorid,image,imageName) VALUES ($1,$2,$3,$4,$5,$6)";
+				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key,req.files.picture.data,req.files.picture.name];
 				pool.query(sql, user, err => {
 					if (err) {
 						return console.error(err.message);
 					}
-					res.redirect('/actu');
+				res.redirect('/actu');
 				});
 			}
 		} catch (err) {
@@ -231,24 +247,20 @@ app.post("/newactu",sessionChecker, (req, res) => {
 	}
 });
 
-app.post('/upload-avatar', async (req, res) => {
-    
-});
-
 app.get("/article/:id", (req, res) => {
-	const sql1 = "SELECT * FROM actu where actuId=?"
+	const sql1 = "SELECT * FROM actu where actuid=$1"
 	const actu1 = [req.params.id];
 	pool.query(sql1, actu1, (err, rows1) => {
 		if (err) {
 			return console.error(err.message);
 		}
 		if(rows1){
-			const sql2 = "SELECT * FROM answer where actuId=? ORDER BY answerId desc"
+			const sql2 = "SELECT * FROM answer where actuid=$1 ORDER BY answerid desc"
 			pool.query(sql2, actu1, (err, rows2) => {
 				if (err) {
 					return console.error(err.message);
 				}
-				res.render("article",{actu:[rows1,rows2] ,req:req})
+				res.render("article",{actu:[rows1.rows[0],rows2.rows] ,req:req})
 			});
 		}else{
 			res.redirect('/actu');
@@ -258,7 +270,7 @@ app.get("/article/:id", (req, res) => {
 
 app.get("/edit/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
-		const sql1 = "SELECT * FROM actu where actuId=?"
+		const sql1 = "SELECT * FROM actu where actuid=$1"
 	const actu1 = [req.params.id];
 	pool.query(sql1, actu1, (err, rows) => {
 		if (err) {
@@ -274,7 +286,7 @@ app.get("/edit/:id",sessionChecker, (req, res) => {
 
 app.post("/edit/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
-		const sql1 = "UPDATE actu SET title=? , content=? WHERE actuId=?";
+		const sql1 = "UPDATE actu SET title=$1 , content=$2 WHERE actuid=$3";
 		const actu1 = [req.body.title,req.body.content,req.params.id];
 		pool.query(sql1, actu1, (err, rows) => {
 			if (err) {
@@ -290,7 +302,7 @@ app.post("/edit/:id",sessionChecker, (req, res) => {
 
 app.get("/delete/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
-		const sql1 = "DELETE FROM actu WHERE actuId=?";
+		const sql1 = "DELETE FROM actu WHERE actuid=$1";
 		const actu1 = [req.params.id];
 		pool.query(sql1, actu1, (err, rows) => {
 			if (err) {
@@ -306,7 +318,7 @@ app.get("/delete/:id",sessionChecker, (req, res) => {
 
 app.post("/newanswer/:id", (req, res) => {
 	if(req.session.isLoggedIn){
-		const sql = "INSERT INTO answer (content,author,authorId,actuId) VALUES (?,?,?,?)";
+		const sql = "INSERT INTO answer (content,author,authorid,actuid) VALUES ($1,$2,$3,$4)";
 		const user = [req.body.comment,req.session.nickname,req.session.key,req.params.id];
 		pool.query(sql, user, err => {
 			if (err) {
@@ -323,7 +335,7 @@ app.post("/newanswer/:id", (req, res) => {
 /* Rendering page with only the selected comment editable
 app.get("/edita/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
-		const sql1 = "SELECT * FROM answer where actuId=?"
+		const sql1 = "SELECT * FROM answer where actuid=?"
 	const actu1 = [req.params.id];
 	db.all(sql1, actu1, (err, rows) => {
 		if (err) {
@@ -339,7 +351,7 @@ app.get("/edita/:id",sessionChecker, (req, res) => {
 
 app.post("/edita/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
-		const sql1 = "UPDATE answer SET title=? , content=? WHERE actuId=?";
+		const sql1 = "UPDATE answer SET title=? , content=? WHERE actuid=?";
 		const actu1 = [req.body.title,req.body.content,req.params.id];
 		db.all(sql1, actu1, (err, rows) => {
 			if (err) {
@@ -354,19 +366,19 @@ app.post("/edita/:id",sessionChecker, (req, res) => {
 });
 */
 
-app.get("/deletea/:articleId/:andwerId",sessionChecker, (req, res) => {
+app.get("/deletea/:articleid/:andwerid",sessionChecker, (req, res) => {
 	if(req.session.isLoggedIn){
-		const sql1 = "DELETE FROM answer WHERE answerId=?";
-		const actu1 = [req.params.andwerId];
+		const sql1 = "DELETE FROM answer WHERE answerid=$1";
+		const actu1 = [req.params.andwerid];
 		pool.query(sql1, actu1, (err, rows) => {
 			if (err) {
 			  return console.error(err.message);
 			}
 		});
-		res.redirect('/article/'+req.params.articleId)
+		res.redirect('/article/'+req.params.articleid)
 	}
 	else{
-		res.redirect('/article/'+req.params.articleId)
+		res.redirect('/article/'+req.params.articleid)
 	}
 });
 

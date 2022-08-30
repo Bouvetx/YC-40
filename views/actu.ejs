@@ -27,20 +27,19 @@
 					<div class="col">
 						<div class="card shadow-sm">
 							<div class="">
-								<img src="/image/<%= actu.image %>" class="card-img-top cover" height="225" focusable="false">
+								<img src="/image/<%= actu.imagename %>" class="card-img-top cover" height="225" focusable="false">
 							</div>
-							
 							<div class="card-body">
 								<h6 class="card-text"><%= actu.title%></h6>
 								<div class="d-flex justify-content-between align-items-center">
 									<div class="btn-group text-center">
-										<a type="button" class="btn btn-sm btn-outline-secondary" href="/article/<%= actu.actuId %>">Lire plus</a>
+										<a type="button" class="btn btn-sm btn-outline-secondary" href="/article/<%= actu.actuid %>">Lire plus</a>
 										<% if(req.session.admin==1){ %>
-											<a type="button" class="btn btn-sm btn-outline-secondary" href="/edit/<%= actu.actuId %>">Editer</a>
-											<a type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmdel" actu-id-delete="<%= actu.actuId %>">Supprimer</a>
+											<a type="button" class="btn btn-sm btn-outline-secondary" href="/edit/<%= actu.actuid %>">Editer</a>
+											<a type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmdel" actu-id-delete="<%= actu.actuid %>">Supprimer</a>
 										<% } %>
 									</div>
-									<small class="text-muted"><%= actu.ddate%></small>
+									<small class="text-muted"><%= actu.date%></small>
 								</div>
 							</div>
 						</div>

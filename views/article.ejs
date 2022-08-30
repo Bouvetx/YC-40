@@ -18,7 +18,7 @@
 				<% } %>
 			</div>
 			<div class="p-2 text-center">
-				<img src="/image/<%= actu[0].image %>" class="rounded mx-auto center" width="100%" height="auto" alt="<%= actu.image %>">
+				<img src="/image/<%= actu[0].imagename %>" class="rounded mx-auto center" width="100%" height="auto" alt="<%= actu.image %>">
 			</div>
 		</div>
 		<div class="container bg-light p-3"></div>
@@ -30,7 +30,7 @@
 	<div class="container bg-primary p-3"></div>
 	
 	<div class="container bg-light p-3 rounded">
-		<form action="/newanswer/<%= actu[0].actuId %>" method="post">
+		<form action="/newanswer/<%= actu[0].actuid %>" method="post">
 			<div class="form-horizontal">
 				<div class="form-group row">
 					<label class="row-form-label row-sm-2" for="comment">Commentaires</label>
@@ -55,13 +55,13 @@
 					</div>
 				</div>
 				<div class="btn-group text-center ms-auto p-2 ">
-					<% if(req.session.admin || req.session.key==com.authorId){ %>
-						<!--<a type="button" class="btn btn-sm btn-outline-secondary" href="/edita/<%= com.answerId %>">Editer</a>-->
+					<% if(req.session.admin || req.session.key==com.authorid){ %>
+						<!--<a type="button" class="btn btn-sm btn-outline-secondary" href="/edita/<%= com.answerid %>">Editer</a>-->
 						
-						<a type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmdel" actu-id-delete="<%= com.actuId %>/<%= com.answerId %>">Supprimer</a>
+						<a type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmdel" actu-id-delete="<%= com.actuid %>/<%= com.answerid %>">Supprimer</a>
 					<% } %>
-					<!--<a type="button" class="btn btn-sm btn-success" href="/Upvote/<%= com.answerId %>"><%= com.votesnb %> Upvote</a>-->
-					<!--<a type="button" class="btn btn-sm btn-secondary" href="/NewAnswer/<%= com.answerId %>">Répondre</a>-->
+					<!--<a type="button" class="btn btn-sm btn-success" href="/Upvote/<%= com.answerid %>"><%= com.votesnb %> Upvote</a>-->
+					<!--<a type="button" class="btn btn-sm btn-secondary" href="/NewAnswer/<%= com.answerid %>">Répondre</a>-->
 				</div>
 			</div>
 			<div class="container bg-light p-3"></div>
