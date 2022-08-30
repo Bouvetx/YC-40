@@ -248,14 +248,14 @@ app.post("/newactu",sessionChecker, (req, res) => {
 });
 
 app.get("/article/:id", (req, res) => {
-	const sql1 = "SELECT * FROM actu where actuid=$1"
+	const sql1 = "SELECT actuid,title,content,author,authorid,image,imagename,cast(date AS TEXT) FROM actu where actuid=$1"
 	const actu1 = [req.params.id];
 	pool.query(sql1, actu1, (err, rows1) => {
 		if (err) {
 			return console.error(err.message);
 		}
 		if(rows1){
-			const sql2 = "SELECT * FROM answer where actuid=$1 ORDER BY answerid desc"
+			const sql2 = "SELECT answerid,actuid,content,author,authorid,cast(date AS TEXT) FROM answer where actuid=$1 ORDER BY answerid desc"
 			pool.query(sql2, actu1, (err, rows2) => {
 				if (err) {
 					return console.error(err.message);
