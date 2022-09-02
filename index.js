@@ -8,7 +8,6 @@ const fileUpload = require('express-fileupload');
 const app = express();
 const crypto = require('crypto');
 
-//app.use(cookieParser());
 app.use(fileUpload());
 /* const https = require('https');
 const fs = require('fs');
@@ -45,39 +44,6 @@ const sessionChecker = (req, res, next) => {
     }    
 };
 
-/*
-const sql_debug1 = `DROP table faq;`;
-db.run(sql_debug1, err => {
-  if (err) {
-    return console.error(err.message);
-  }
-  console.log("Drop faq");
-});
-
-const sql_debug2 = `DROP table user;`;
-
-db.run(sql_debug2, err => {
-  if (err) {
-    return console.error(err.message);
-  }
-  console.log("Drop user");
-});
-/*
-const sql_debug3 = "SELECT * from user";
-db.all(sql_debug3, [], (err, rows) => {
-  if (err) {
-    throw err;
-  }
-  rows.forEach((row) => {
-    console.log(row.email);
-	console.log(row.nickname);
-	console.log(row.password);
-	console.log();
-  });
-});
-*/
-
-
 // Server configuration
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -93,36 +59,19 @@ if (port == null || port == "") {
 }
 app.listen(port);
 
-const imgreco = "SELECT image,imagename FROM actu"
+const imgreco = "SELECT image,imagename FROM image"
 pool.query(imgreco, [], (err, rows) => {
 	if (err) {
 		return console.error(err.message);
 	}
 	rows.rows.forEach((row) => {
-		console.log(row.imagename);
-		if(row.imagename!="default.jpg"){
-			fs.writeFile('./public/image/' + row.imagename, row.image, 'ascii', function(err) {
-				if (err) {
-					return console.error(err.message);
-				}
-			});
-		}
+		fs.writeFile('./public/image/' + row.imagename, row.image, 'ascii', function(err) {
+			if (err) {
+				return console.error(err.message);
+			}
+		});
 	});
 });
-
-/* app.get('/', (req, res) => {
-    if (true) {
-		const sql = "SELECT * FROM actu order by actuid desc"
-		  db.all(sql, [], (err, rows) => {
-			if (err) {
-			  return console.error(err.message);
-			}
-			res.render("index", { model: rows ,req:req});
-		  });
-    } else {
-        res.redirect('/login');
-    }
-}); */
 
 app.get("/actu", (req, res) => {
 	const sql = "SELECT cast(date AS TEXT),title,actuid,imagename FROM actu order by date desc"
@@ -159,8 +108,8 @@ app.get("/skipper", (req, res) => {
 	res.render("skipper",{req:req});
 });
 
-app.get("/course", (req, res) => {
-	res.render("course",{req:req});
+app.get("/sponsor", (req, res) => {
+	res.render("sponsor",{req:req});
 });
 
 app.post("/login", (req, res) => {
@@ -218,8 +167,8 @@ app.post("/newactu",sessionChecker, (req, res) => {
 	if(req.session.admin){
 		try {
 			if(!req.files) {
-				const sql = "INSERT INTO actu (title, content,author,authorid) VALUES ($1,$2,$3,$4)";
-				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key];
+				const sql = "INSERT INTO actu (title, content,author,authorid,videolink) VALUES ($1,$2,$3,$4,$5)";
+				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key,req.body.lien];
 				pool.query(sql, user, err => {
 					if (err) {
 						return console.error(err.message);
@@ -232,12 +181,19 @@ app.post("/newactu",sessionChecker, (req, res) => {
 				console.log(picture.data);
 				//Use the mv() method to place the file in upload directory (i.e. "uploads")
 				picture.mv('./public/image/' + picture.name);
-				const sql = "INSERT INTO actu (title, content,author,authorid,image,imageName) VALUES ($1,$2,$3,$4,$5,$6)";
-				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key,req.files.picture.data,req.files.picture.name];
+				const sql = "INSERT INTO actu (title, content,author,authorid,imagename,videolink) VALUES ($1,$2,$3,$4,$5,$6,$7)";
+				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key,picture.name,req.body.lien];
 				pool.query(sql, user, err => {
 					if (err) {
 						return console.error(err.message);
 					}
+					const sql2 = "INSERT INTO image (image,imagename) VALUES ($1,$2)";
+					const user2 = [picture.data,picture.name];
+					pool.query(sql2, user2, err => {
+						if (err) {
+							return console.error(err.message);
+						}
+					});
 				res.redirect('/actu');
 				});
 			}
@@ -251,7 +207,7 @@ app.post("/newactu",sessionChecker, (req, res) => {
 });
 
 app.get("/article/:id", (req, res) => {
-	const sql1 = "SELECT actuid,title,content,author,authorid,image,imagename,cast(date AS TEXT) FROM actu where actuid=$1"
+	const sql1 = "SELECT actuid,title,content,author,authorid,imagename,cast(date AS TEXT),videolink FROM actu where actuid=$1"
 	const actu1 = [req.params.id];
 	pool.query(sql1, actu1, (err, rows1) => {
 		if (err) {

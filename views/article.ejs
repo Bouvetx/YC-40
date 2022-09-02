@@ -17,9 +17,17 @@
 					</p>
 				<% } %>
 			</div>
-			<div class="p-2 text-center">
-				<img src="/image/<%= actu[0].imagename %>" class="rounded mx-auto center" width="100%" height="auto" alt="<%= actu.image %>">
-			</div>
+			<% if(actu[0].imagename!="default.jpg") { %>
+				<div class="p-2 text-center">
+					<img src="/image/<%= actu[0].imagename %>" class="rounded mx-auto center" width="100%" height="auto" alt="<%= actu.image %>">
+				</div>
+			<% } %>
+			
+		</div>
+		<div class="row row-cols-1 row-cols-1 row-cols-sm-2 row-cols-md-3 d-flex justify-content-around">
+			<iframe width="720" height="480"
+				src="https://www.youtube.com/embed/<%= actu[0].videolink %>">
+			</iframe>
 		</div>
 		<div class="container bg-light p-3"></div>
 		<p>
