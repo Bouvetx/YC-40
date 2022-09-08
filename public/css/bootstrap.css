@@ -11887,12 +11887,14 @@ textarea.form-control-lg {
   }
 }
 .bg-image{
-	position: relative;
+  position: relative;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
-
+.bg-image-crop{
+	overflow: hidden;
+}
 body {
   height: 100%;
 }
