@@ -181,7 +181,7 @@ app.post("/newactu",sessionChecker, (req, res) => {
 				console.log(picture.data);
 				//Use the mv() method to place the file in upload directory (i.e. "uploads")
 				picture.mv('./public/image/' + picture.name);
-				const sql = "INSERT INTO actu (title, content,author,authorid,imagename,videolink) VALUES ($1,$2,$3,$4,$5,$6,$7)";
+				const sql = "INSERT INTO actu (title, content,author,authorid,imagename,videolink) VALUES ($1,$2,$3,$4,$5,$6)";
 				const user = [req.body.title, req.body.content,req.session.nickname,req.session.key,picture.name,req.body.lien];
 				pool.query(sql, user, err => {
 					if (err) {
