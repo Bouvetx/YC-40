@@ -24,12 +24,15 @@
 			<% } %>
 			
 		</div>
-		<div class="ratio ratio-16x9">
-			<iframe
-				title="YouTube video"
-				src="https://www.youtube.com/embed/<%= actu[0].videolink %>">
-			</iframe>
-		</div>
+		<% if(actu[0].videolink!="") { %>
+			<div class="ratio ratio-16x9">
+				<iframe
+					title="YouTube video"
+					src="https://www.youtube.com/embed/<%= actu[0].videolink %>">
+				</iframe>
+			</div>
+		<% } %>
+		
 		<div class="container bg-light p-3"></div>
 		<p>
 			<%=actu[0].date%>
