@@ -6,7 +6,8 @@
 		<p class="h1">
 			<%=actu[0].title%>
 		</p>
-		<div class="row row-cols-1 row-cols-1 row-cols-sm-2 row-cols-md-3 d-flex justify-content-around">
+		<% if(actu[0].content!="") { %>
+			<div class="row row-cols-1 row-cols-1 row-cols-sm-2 row-cols-md-3 d-flex justify-content-around">
 			<div class="p-2 d-flex flex-column text-center col-md-6 justify-content-around">
 				<%
 					const paragraphes = actu[0].content.split('\r');
@@ -22,8 +23,14 @@
 					<img src="/image/<%= actu[0].imagename %>" class="rounded mx-auto center" width="100%" height="auto" alt="<%= actu.image %>">
 				</div>
 			<% } %>
-			
 		</div>
+		<% }else{ %>
+			<% if(actu[0].imagename!="default.jpg") { %>
+				<div class="p-2 text-center">
+					<img src="/image/<%= actu[0].imagename %>" class="rounded mx-auto center" width="100%" height="auto" alt="<%= actu.image %>">
+				</div>
+			<% } %>
+		<% } %>
 		<% if(actu[0].videolink!="") { %>
 			<div class="ratio ratio-16x9">
 				<iframe
