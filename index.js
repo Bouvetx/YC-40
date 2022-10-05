@@ -237,13 +237,13 @@ app.get("/article/:id", (req, res) => {
 app.get("/edit/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
 		const sql1 = "SELECT * FROM actu where actuid=$1"
-	const actu1 = [req.params.id];
-	pool.query(sql1, actu1, (err, rows) => {
-		if (err) {
-			return console.error(err.message);
-		}
-		res.render("edit",{actu:rows[0] ,req:req})
-	});
+		const actu1 = [req.params.id];
+		pool.query(sql1, actu1, (err, rows) => {
+			if (err) {
+				return console.error(err.message);
+			}
+			res.render("edit",{actu:rows.rows[0] ,req:req})
+		});
 	}
 	else{
 		redirect('/actu');
@@ -252,13 +252,32 @@ app.get("/edit/:id",sessionChecker, (req, res) => {
 
 app.post("/edit/:id",sessionChecker, (req, res) => {
 	if(req.session.admin){
-		const sql1 = "UPDATE actu SET title=$1 , content=$2 WHERE actuid=$3";
-		const actu1 = [req.body.title,req.body.content,req.params.id];
-		pool.query(sql1, actu1, (err, rows) => {
-			if (err) {
-			  return console.error(err.message);
-			}
-		});
+		if(!req.files) {
+			const sql = "UPDATE actu SET title=$1 , content=$2 , videolink=$3 WHERE actuid=$4";
+			const user = [req.body.title, req.body.content,req.body.lien,req.params.id];
+			pool.query(sql, user, err => {
+				if (err) {
+					return console.error(err.message);
+				}
+			});
+		} else {
+			let picture = req.files.picture;
+			picture.mv('./public/image/' + picture.name);
+			const sql = "UPDATE actu SET title=$1 , content=$2 , videolink=$3 , imagename=$4 WHERE actuid=$5";
+			const user = [req.body.title, req.body.content,req.body.lien,picture.name,req.params.id];
+			pool.query(sql, user, err => {
+				if (err) {
+					return console.error(err.message);
+				}
+				const sql2 = "INSERT INTO image (image,imagename) VALUES ($1,$2)";
+				const user2 = [picture.data,picture.name];
+				pool.query(sql2, user2, err => {
+					if (err) {
+						return console.error(err.message);
+					}
+				});
+			});
+		};
 		res.redirect('/actu')
 	}
 	else{

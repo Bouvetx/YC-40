@@ -1,7 +1,7 @@
 <%- include("_header") -%>
 
-<div class="bd-cheatsheet container-fluid bg-body">
-	<form action="/edit/<%= actu.actuId %>" method="post">
+<div class="container bg-light rounded p-3">
+	<form action="/edit/<%= actu.actuid %>" method="post" encType="multipart/form-data">
 		<div class="form-horizontal">
 			 <div class="mb-3">
 				<label for="title" class="form-label">Titre</label>
@@ -9,14 +9,20 @@
 			</div>
 			<div class="form-floating">
 				<div class="mb-3">
-					<label for="Contenu" class="form-label" >Contenu</label>
-					<textarea class="form-control" name="content" rows="30" ><%= actu.content %></textarea>
+					<label for="Contenu" class="form-label">Contenu</label>
+					<textarea class="form-control" name="content" rows="40"><%= actu.content %></textarea>
 				</div>
 			</div>
-			<div class="mb-3">
-				<label class="form-label" for="Thumbnail">Image</label>
-				<input type="file" class="form-control" name="image">
+			<div class="form-floating">
+				<div class="mb-3">
+					<label for="Lien Youtube" class="form-label">Lien Youtube</label>
+					<textarea class="form-control" name="lien"><%= actu.videolink %></textarea>
+				</div>
 			</div>
+				<div class="mb-3">
+					<label for="Thumbnail" class="form-label">Image</label>
+					<input type="file" class="form-control" name="picture">
+				</div>
 			<div class="col-sm-10">
 				<input type="submit" value="Save" class="btn btn-default btn-success" />
 			</div>
